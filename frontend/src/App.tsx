@@ -7,6 +7,7 @@ const Students = lazy(() => import('./pages/Students'))
 const Predictions = lazy(() => import('./pages/Predictions'))
 const Trends = lazy(() => import('./pages/Trends'))
 const StudentDetail = lazy(() => import('./pages/StudentDetail'))
+const ModelTraining = lazy(() => import('./pages/ModelTraining'))
 
 export default function App() {
   return (
@@ -16,10 +17,11 @@ export default function App() {
           <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
             <h1 className="text-xl font-semibold">Lernexa Dashboard</h1>
             <nav className="space-x-4">
-              <Link to="/" className="text-sm hover:underline">Dashboard</Link>
-              <Link to="/students" className="text-sm hover:underline">Students</Link>
-              <Link to="/predictions" className="text-sm hover:underline">Predictions</Link>
-              <Link to="/trends" className="text-sm hover:underline">Trends</Link>
+            <Link to="/" className="text-sm hover:underline">Dashboard</Link>
+            <Link to="/students" className="text-sm hover:underline">Students</Link>
+            <Link to="/predictions" className="text-sm hover:underline">Predictions</Link>
+            <Link to="/trends" className="text-sm hover:underline">Trends</Link>
+            <Link to="/training" className="text-sm hover:underline">Training</Link>
             </nav>
           </div>
         </header>
@@ -32,6 +34,7 @@ export default function App() {
               <Route path="/students/:id" element={<StudentDetail />} />
               <Route path="/predictions" element={<Predictions />} />
               <Route path="/trends" element={<Trends />} />
+              <Route path="/training" element={<ModelTraining />} />
             </Routes>
           </Suspense>
         </main>
