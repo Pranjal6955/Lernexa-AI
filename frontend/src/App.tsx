@@ -1,35 +1,35 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
+import Dashboard from './pages/Dashboard'
+import Students from './pages/Students'
+import Predictions from './pages/Predictions'
+import Trends from './pages/Trends'
+import './index.css'
 
-function App() {
-  const [count, setCount] = useState(0)
-
+export default function App() {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <BrowserRouter>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+        <header className="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
+          <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+            <h1 className="text-xl font-semibold">Lernexa Dashboard</h1>
+            <nav className="space-x-4">
+              <Link to="/" className="text-sm hover:underline">Dashboard</Link>
+              <Link to="/students" className="text-sm hover:underline">Students</Link>
+              <Link to="/predictions" className="text-sm hover:underline">Predictions</Link>
+              <Link to="/trends" className="text-sm hover:underline">Trends</Link>
+            </nav>
+          </div>
+        </header>
+
+        <main className="max-w-6xl mx-auto px-4 py-6">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/students" element={<Students />} />
+            <Route path="/predictions" element={<Predictions />} />
+            <Route path="/trends" element={<Trends />} />
+          </Routes>
+        </main>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </BrowserRouter>
   )
 }
-
-export default App

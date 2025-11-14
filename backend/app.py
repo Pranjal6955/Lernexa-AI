@@ -5,7 +5,7 @@ Main application entry point
 
 import os
 from flask import Flask
-from flask_cors import CORS
+from flask_cors import CORS # type: ignore
 from dotenv import load_dotenv
 
 # Load environment variables

@@ -2,19 +2,22 @@
 Data service for fetching and managing student data from MongoDB
 """
 
-import os
 from config.database import db_config
 from bson import ObjectId
-import json
 
 class DataService:
     """Service for data operations"""
-    
+
     def __init__(self):
-        if not db_config.db:
-            db_config.connect()
+        # Ensure database is connected
+        if db_config.db is None:
+            connected = db_config.connect()
+            if not connected:
+                raise Exception("Failed to connect to MongoDB")
+        
+        # Assign the students collection
         self.collection = db_config.get_collection('students')
-    
+
     def _convert_objectid(self, obj):
         """Convert ObjectId to string for JSON serialization"""
         if isinstance(obj, ObjectId):
@@ -24,7 +27,7 @@ class DataService:
         elif isinstance(obj, list):
             return [self._convert_objectid(item) for item in obj]
         return obj
-    
+
     def get_student_by_id(self, student_id):
         """Get a student by ID"""
         try:
@@ -39,7 +42,6 @@ class DataService:
             
             if student:
                 student = self._convert_objectid(student)
-                # Remove MongoDB _id for cleaner response
                 if '_id' in student:
                     student['id'] = student.pop('_id')
                 return student
@@ -47,13 +49,13 @@ class DataService:
         except Exception as e:
             print(f"Error fetching student: {e}")
             return None
-    
+
     def get_students(self, page=1, limit=50, search=''):
         """Get paginated list of students"""
         try:
             skip = (page - 1) * limit
             query = {}
-            
+
             if search:
                 query = {
                     '$or': [
@@ -64,8 +66,7 @@ class DataService:
             
             students = list(self.collection.find(query).skip(skip).limit(limit))
             total = self.collection.count_documents(query)
-            
-            # Convert ObjectIds
+
             students = [self._convert_objectid(s) for s in students]
             for student in students:
                 if '_id' in student:
@@ -83,7 +84,7 @@ class DataService:
         except Exception as e:
             print(f"Error fetching students: {e}")
             return {'students': [], 'pagination': {'page': 1, 'limit': limit, 'total': 0, 'pages': 0}}
-    
+
     def get_all_students(self):
         """Get all students (for analysis)"""
         try:
@@ -92,13 +93,12 @@ class DataService:
         except Exception as e:
             print(f"Error fetching all students: {e}")
             return []
-    
+
     def get_student_stats(self):
         """Get overall student statistics"""
         try:
             total_students = self.collection.count_documents({})
-            
-            # Calculate averages
+
             pipeline = [
                 {
                     '$group': {
@@ -113,15 +113,14 @@ class DataService:
                     }
                 }
             ]
-            
+
             result = list(self.collection.aggregate(pipeline))
             stats = result[0] if result else {}
-            
-            # Count by risk level
+
             high_risk = self.collection.count_documents({'RiskScore': {'$gte': 70}})
             medium_risk = self.collection.count_documents({'RiskScore': {'$gte': 40, '$lt': 70}})
             low_risk = self.collection.count_documents({'RiskScore': {'$lt': 40}})
-            
+
             return {
                 'total_students': total_students,
                 'averages': {
@@ -151,4 +150,3 @@ class DataService:
                 'ranges': {},
                 'risk_distribution': {'high': 0, 'medium': 0, 'low': 0}
             }
-
