@@ -1,0 +1,8 @@
+Flask
+pymongo
+pandas
+scikit-learn
+joblib
+python-dotenv
+pytest
+requests
