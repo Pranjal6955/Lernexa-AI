@@ -35,3 +35,5 @@ class DatabaseConfig:
 
 # Global database instance
 db_config = DatabaseConfig()
+
+db_config.connect()
