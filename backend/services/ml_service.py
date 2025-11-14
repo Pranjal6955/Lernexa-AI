@@ -67,13 +67,35 @@ class MLService:
             
             X = df[available_features].fillna(0)
             
-            # Create target variable: completion likelihood (1 if FinalGrade >= 60, else 0)
-            y = (df['FinalGrade'] >= 60).astype(int)
+            # Create target variable: completion likelihood
+            # Use median of FinalGrade to create balanced binary classification
+            if 'FinalGrade' in df.columns:
+                final_grade_median = df['FinalGrade'].median()
+                y = (df['FinalGrade'] >= final_grade_median).astype(int)
+            elif 'RiskScore' in df.columns:
+                # Alternative: use RiskScore (lower is better, so invert)
+                risk_median = df['RiskScore'].median()
+                y = (df['RiskScore'] <= risk_median).astype(int)
+            else:
+                return {'error': 'No target variable (FinalGrade or RiskScore) found for training'}
             
-            # Split data
-            X_train, X_test, y_train, y_test = train_test_split(
-                X, y, test_size=0.2, random_state=42, stratify=y
-            )
+            # Ensure we have both classes
+            if y.nunique() < 2:
+                return {
+                    'error': 'Imbalanced target variable',
+                    'message': 'All students have same outcome. Need diverse student outcomes for training.'
+                }
+            
+            # Split data without stratify if one class is too small
+            try:
+                X_train, X_test, y_train, y_test = train_test_split(
+                    X, y, test_size=0.2, random_state=42, stratify=y
+                )
+            except:
+                # Fallback without stratification if class distribution is too imbalanced
+                X_train, X_test, y_train, y_test = train_test_split(
+                    X, y, test_size=0.2, random_state=42
+                )
             
             # Scale features
             self.scaler = StandardScaler()
