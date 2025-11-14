@@ -32,7 +32,14 @@ export default function Dashboard() {
     let mounted = true
 
     // fetch overview stats
-    api.get('/insights/overview').then((res) => { if (mounted) setOverview(res.data) }).catch(() => {})
+    api.get('/insights/overview')
+      .then((res) => { 
+        if (mounted) setOverview(res.data)
+      })
+      .catch((err) => {
+        console.error('Error fetching overview:', err)
+        if (mounted) setOverview(null)
+      })
 
     // fetch a large page of students for building charts (limit high so features are visible)
     api.get('/students', { params: { page: 1, limit: 2000 } })
@@ -40,20 +47,31 @@ export default function Dashboard() {
         const list = Array.isArray(res.data) ? res.data : res.data?.students ?? []
         if (mounted) setStudents(list)
       })
-      .catch(() => {})
-      .finally(() => { if (mounted) setLoading(false) })
+      .catch((err) => {
+        console.error('Error fetching students:', err)
+        if (mounted) setStudents([])
+      })
+      .finally(() => { 
+        if (mounted) setLoading(false) 
+      })
 
     return () => { mounted = false }
   }, [])
 
-  if (loading) return <div>Loading...</div>
+  if (loading) return <div className="p-4">Loading...</div>
 
   // Prepare feature distributions dynamically
-  const allKeys = Array.from(new Set(students.flatMap((s: any) => Object.keys(s || {}))))
+  const allKeys = students.length > 0 
+    ? Array.from(new Set(students.flatMap((s: any) => Object.keys(s || {}))))
+    : []
+
+  // Filter out internal fields that shouldn't be charted
+  const excludeKeys = ['_id', 'id', 'StudentID', '__v']
+  const chartKeys = allKeys.filter((k) => !excludeKeys.includes(k))
 
   // select numeric keys and categorical keys
-  const numericKeys = allKeys.filter((k) => students.some((s) => isNumeric(s[k])))
-  const categoricalKeys = allKeys.filter((k) => !numericKeys.includes(k) && students.some((s) => s[k] != null))
+  const numericKeys = chartKeys.filter((k) => students.some((s) => isNumeric(s[k])))
+  const categoricalKeys = chartKeys.filter((k) => !numericKeys.includes(k) && students.some((s) => s[k] != null))
 
   // build small set of charts: up to 4 numeric histograms and up to 3 categorical pies
   const numericCharts = numericKeys.slice(0, 4).map((k) => {
@@ -77,29 +95,45 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="col-span-2 p-4 bg-white dark:bg-gray-800 rounded shadow">
           <h2 className="text-lg font-semibold mb-4">Overview</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-300">Summary: {overview?.summary || '—'}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            {overview?.summary || (students.length === 0 ? 'No data available. Please ensure the backend is running and has student data.' : 'Loading summary...')}
+          </p>
         </div>
         <div className="p-4 bg-white dark:bg-gray-800 rounded shadow">
           <h3 className="font-medium mb-2">Stats</h3>
           <ul className="text-sm space-y-1">
-            <li>Total students: {overview?.total_students ?? students.length ?? '—'}</li>
-            <li>Avg score: {overview?.averages?.final_grade ?? '—'}</li>
-            <li>Avg engagement: {overview?.averages?.engagement_score ?? '—'}</li>
+            <li>Total students: {overview?.total_students ?? students.length ?? 0}</li>
+            <li>Avg score: {overview?.averages?.final_grade?.toFixed(2) ?? '—'}</li>
+            <li>Avg engagement: {overview?.averages?.engagement_score?.toFixed(2) ?? '—'}</li>
           </ul>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="md:col-span-2 space-y-4">
-          <Suspense fallback={<div>Loading charts...</div>}>
-            {numericCharts.map((c) => (
-              <ChartBar key={c.key} labels={c.data.labels} values={c.data.values} title={`${c.key} distribution`} />
-            ))}
+          {students.length === 0 ? (
+            <div className="p-4 bg-white dark:bg-gray-800 rounded shadow">
+              <p className="text-sm text-gray-500">No student data available to display charts. Please ensure data is loaded in the database.</p>
+            </div>
+          ) : (
+            <Suspense fallback={<div>Loading charts...</div>}>
+              {numericCharts.length === 0 && categoricalCharts.length === 0 ? (
+                <div className="p-4 bg-white dark:bg-gray-800 rounded shadow">
+                  <p className="text-sm text-gray-500">No chartable data available. Student records may not have numeric or categorical fields.</p>
+                </div>
+              ) : (
+                <>
+                  {numericCharts.map((c) => (
+                    <ChartBar key={c.key} labels={c.data.labels} values={c.data.values} title={`${c.key} distribution`} />
+                  ))}
 
-            {categoricalCharts.map((c) => (
-              <ChartPie key={c.key} labels={c.data.labels} values={c.data.values} title={`${c.key} breakdown`} />
-            ))}
-          </Suspense>
+                  {categoricalCharts.map((c) => (
+                    <ChartPie key={c.key} labels={c.data.labels} values={c.data.values} title={`${c.key} breakdown`} />
+                  ))}
+                </>
+              )}
+            </Suspense>
+          )}
         </div>
 
         <div>

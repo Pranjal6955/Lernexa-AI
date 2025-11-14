@@ -19,6 +19,15 @@ type Props = {
 }
 
 export default function ChartLine({ labels, values, title }: Props) {
+  if (!labels || !values || labels.length === 0 || values.length === 0) {
+    return (
+      <div className="p-4 bg-white dark:bg-gray-800 rounded shadow">
+        <h3 className="font-medium mb-2">{title || 'Line Chart'}</h3>
+        <p className="text-sm text-gray-500">No data available</p>
+      </div>
+    )
+  }
+
   const data = {
     labels,
     datasets: [
@@ -28,19 +37,28 @@ export default function ChartLine({ labels, values, title }: Props) {
         borderColor: '#4F46E5',
         backgroundColor: 'rgba(79,70,229,0.08)',
         tension: 0.3,
+        fill: true,
       },
     ],
   }
 
   const options = {
     responsive: true,
-    plugins: { legend: { display: !!title } },
+    maintainAspectRatio: true,
+    plugins: { 
+      legend: { display: !!title },
+      tooltip: {
+        enabled: true,
+      }
+    },
   }
 
   return (
     <div className="p-4 bg-white dark:bg-gray-800 rounded shadow">
       <h3 className="font-medium mb-2">{title || 'Line Chart'}</h3>
-      <Line data={data} options={options} />
+      <div className="h-64">
+        <Line data={data} options={options} />
+      </div>
     </div>
   )
 }

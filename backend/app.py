@@ -4,7 +4,7 @@ Main application entry point
 """
 
 import os
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS # type: ignore
 from dotenv import load_dotenv
 
@@ -31,19 +31,19 @@ app.register_blueprint(students.bp, url_prefix='/api/students')
 @app.route('/')
 def health_check():
     """Health check endpoint"""
-    return {
+    return jsonify({
         'status': 'healthy',
         'message': 'Lernexa AI Learning Insights API',
         'version': '1.0.0'
-    }
+    })
 
 @app.route('/api/health')
 def api_health():
     """API health check"""
-    return {
+    return jsonify({
         'status': 'ok',
         'service': 'lernexa-ai-backend'
-    }
+    })
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))

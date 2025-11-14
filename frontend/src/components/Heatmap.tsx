@@ -14,6 +14,15 @@ function getColor(value: number, max = 1) {
 }
 
 export default function Heatmap({ matrix, labels, title }: Props) {
+  if (!matrix || !Array.isArray(matrix) || matrix.length === 0 || !matrix[0] || matrix[0].length === 0) {
+    return (
+      <div className="p-4 bg-white dark:bg-gray-800 rounded shadow">
+        <h3 className="font-medium mb-2">{title || 'Heatmap'}</h3>
+        <p className="text-sm text-gray-500">No data available</p>
+      </div>
+    )
+  }
+
   const max = Math.max(...matrix.flat(), 1)
 
   return (
