@@ -50,7 +50,7 @@ class DataService:
             print(f"Error fetching student: {e}")
             return None
 
-    def get_students(self, page=1, limit=50, search=''):
+    def get_students(self, page=1, limit=200, search=''):
         """Get paginated list of students"""
         try:
             skip = (page - 1) * limit

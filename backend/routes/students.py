@@ -13,7 +13,7 @@ def get_students():
     """Get list of students with optional filtering"""
     try:
         page = int(request.args.get('page', 1))
-        limit = int(request.args.get('limit', 50))
+        limit = int(request.args.get('limit', 200))
         search = request.args.get('search', '')
         
         students = data_service.get_students(page=page, limit=limit, search=search)

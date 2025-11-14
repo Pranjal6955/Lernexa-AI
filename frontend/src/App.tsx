@@ -1,9 +1,12 @@
+import { Suspense, lazy } from 'react'
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
-import Dashboard from './pages/Dashboard'
-import Students from './pages/Students'
-import Predictions from './pages/Predictions'
-import Trends from './pages/Trends'
 import './index.css'
+
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const Students = lazy(() => import('./pages/Students'))
+const Predictions = lazy(() => import('./pages/Predictions'))
+const Trends = lazy(() => import('./pages/Trends'))
+const StudentDetail = lazy(() => import('./pages/StudentDetail'))
 
 export default function App() {
   return (
@@ -22,12 +25,15 @@ export default function App() {
         </header>
 
         <main className="max-w-6xl mx-auto px-4 py-6">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/students" element={<Students />} />
-            <Route path="/predictions" element={<Predictions />} />
-            <Route path="/trends" element={<Trends />} />
-          </Routes>
+          <Suspense fallback={<div>Loading page...</div>}>
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/students" element={<Students />} />
+              <Route path="/students/:id" element={<StudentDetail />} />
+              <Route path="/predictions" element={<Predictions />} />
+              <Route path="/trends" element={<Trends />} />
+            </Routes>
+          </Suspense>
         </main>
       </div>
     </BrowserRouter>

@@ -1,25 +1,41 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import api from '../services/api'
 
 export default function Students() {
   const [students, setStudents] = useState<any[]>([])
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
+  const [columns, setColumns] = useState<string[]>([])
 
   useEffect(() => {
     setLoading(true)
     api
-      .get('/students', { params: { page, limit: 50 } })
+      .get('/students', { params: { page, limit: 200 } })
       .then((res) => {
         // backend returns { students: [...], pagination: {...} }
         const data = res.data
-        if (Array.isArray(data)) {
-          setStudents(data)
-        } else if (data && Array.isArray(data.students)) {
-          setStudents(data.students)
-        } else {
-          setStudents([])
-        }
+        const list = Array.isArray(data) ? data : data?.students ?? []
+        setStudents(list)
+
+        // derive table columns dynamically from the returned student objects
+        const cols = new Set<string>()
+        list.forEach((s: any) => Object.keys(s || {}).forEach((k) => cols.add(k)))
+        // remove email fields if present (dataset doesn't include them)
+        cols.delete('email')
+        cols.delete('Email')
+        // remove id and name columns per request
+        cols.delete('id')
+        cols.delete('Name')
+        cols.delete('name')
+        // prefer common ordering: StudentID, FinalGrade/ExamScore, then the rest
+        const preferred: string[] = []
+        if (cols.has('StudentID')) preferred.push('StudentID')
+        if (cols.has('FinalGrade')) preferred.push('FinalGrade')
+        if (cols.has('ExamScore')) preferred.push('ExamScore')
+        
+        const rest = Array.from(cols).filter((c) => !preferred.includes(c)).sort()
+        setColumns([...preferred, ...rest])
       })
       .catch(() => setStudents([]))
       .finally(() => setLoading(false))
@@ -35,24 +51,38 @@ export default function Students() {
           <table className="min-w-full text-sm">
             <thead>
               <tr className="text-left border-b">
-                <th className="px-4 py-2">ID</th>
-                <th className="px-4 py-2">Name</th>
-                <th className="px-4 py-2">Email</th>
-                <th className="px-4 py-2">Score</th>
+                {columns.map((col) => (
+                  <th key={col} className="px-4 py-2">{col}</th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {students.map((s: any) => {
-                const id = s.id || s.StudentID || s._id || '—'
-                const name = s.name || s.Name || '—'
-                const email = s.email || s.Email || '—'
-                const score = s.avg_score ?? s.FinalGrade ?? s.ExamScore ?? '—'
+              {students.map((s: any, idx: number) => {
+                const id = s.id || s.StudentID || s._id || `row-${idx}`
                 return (
                   <tr key={id} className="border-b last:border-b-0">
-                    <td className="px-4 py-2">{id}</td>
-                    <td className="px-4 py-2">{name}</td>
-                    <td className="px-4 py-2">{email}</td>
-                    <td className="px-4 py-2">{score}</td>
+                    {columns.map((col) => {
+                      let cell = s[col]
+                      if (typeof cell === 'object' && cell !== null) {
+                        try {
+                          cell = JSON.stringify(cell)
+                        } catch {
+                          cell = String(cell)
+                        }
+                      }
+
+                      if ((col === 'StudentID' || col === 'id' || col === '_id') && id) {
+                        return (
+                          <td key={col} className="px-4 py-2">
+                            <Link to={`/students/${id}`} className="text-indigo-600 hover:underline">{s.Name || s.name || id}</Link>
+                          </td>
+                        )
+                      }
+
+                      return (
+                        <td key={col} className="px-4 py-2">{cell ?? '—'}</td>
+                      )
+                    })}
                   </tr>
                 )
               })}
