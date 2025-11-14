@@ -10,6 +10,15 @@ type Props = {
 }
 
 export default function ChartBar({ labels, values, title }: Props) {
+  if (!labels || !values || labels.length === 0 || values.length === 0) {
+    return (
+      <div className="p-4 bg-white dark:bg-gray-800 rounded shadow">
+        <h3 className="font-medium mb-2">{title || 'Bar Chart'}</h3>
+        <p className="text-sm text-gray-500">No data available</p>
+      </div>
+    )
+  }
+
   const data = {
     labels,
     datasets: [
@@ -23,13 +32,21 @@ export default function ChartBar({ labels, values, title }: Props) {
 
   const options = {
     responsive: true,
-    plugins: { legend: { display: !!title } },
+    maintainAspectRatio: true,
+    plugins: { 
+      legend: { display: !!title },
+      tooltip: {
+        enabled: true,
+      }
+    },
   }
 
   return (
     <div className="p-4 bg-white dark:bg-gray-800 rounded shadow">
       <h3 className="font-medium mb-2">{title || 'Bar Chart'}</h3>
-      <Bar data={data} options={options} />
+      <div className="h-64">
+        <Bar data={data} options={options} />
+      </div>
     </div>
   )
 }

@@ -28,19 +28,66 @@ class InsightsService:
         """Get overall insights across all students"""
         all_students = self.data_service.get_all_students()
         if not all_students:
-            return {'error': 'No student data available'}
+            return {
+                'total_students': 0,
+                'summary': 'No student data available',
+                'averages': {
+                    'final_grade': 0,
+                    'engagement_score': 0
+                },
+                'high_risk_students': 0,
+                'high_risk_percentage': 0,
+                'engagement_heatmap': []
+            }
         
         total = len(all_students)
         avg_engagement = sum(s.get('EngagementScore', 0) for s in all_students) / total
         avg_grade = sum(s.get('FinalGrade', 0) for s in all_students) / total
+        avg_study_hours = sum(s.get('StudyHours', 0) for s in all_students) / total
+        avg_attendance = sum(s.get('Attendance', 0) for s in all_students) / total
         high_risk = sum(1 for s in all_students if s.get('RiskScore', 0) >= 70)
+        
+        # Generate engagement heatmap (7x5 grid representing engagement patterns)
+        # Group students by engagement score ranges and create a heatmap
+        engagement_ranges = [
+            (0, 20), (20, 40), (40, 60), (60, 80), (80, 100)
+        ]
+        attendance_ranges = [
+            (0, 40), (40, 60), (60, 80), (80, 90), (90, 100)
+        ]
+        
+        heatmap = []
+        for att_range in attendance_ranges:
+            row = []
+            for eng_range in engagement_ranges:
+                count = sum(1 for s in all_students 
+                           if att_range[0] <= s.get('Attendance', 0) < att_range[1]
+                           and eng_range[0] <= s.get('EngagementScore', 0) < eng_range[1])
+                row.append(count)
+            heatmap.append(row)
+        
+        # Generate summary
+        passing_rate = (sum(1 for s in all_students if s.get('FinalGrade', 0) >= 60) / total * 100) if total > 0 else 0
+        summary_parts = [
+            f"Total students: {total}",
+            f"Average grade: {avg_grade:.1f}",
+            f"Passing rate: {passing_rate:.1f}%",
+            f"High risk students: {high_risk} ({high_risk/total*100:.1f}%)" if total > 0 else "High risk students: 0"
+        ]
+        summary = ". ".join(summary_parts)
         
         return {
             'total_students': total,
-            'average_engagement': round(avg_engagement, 2),
-            'average_grade': round(avg_grade, 2),
+            'summary': summary,
+            'averages': {
+                'final_grade': round(avg_grade, 2),
+                'engagement_score': round(avg_engagement, 2),
+                'study_hours': round(avg_study_hours, 2),
+                'attendance': round(avg_attendance, 2)
+            },
             'high_risk_students': high_risk,
-            'high_risk_percentage': round((high_risk / total) * 100, 2) if total > 0 else 0
+            'high_risk_percentage': round((high_risk / total) * 100, 2) if total > 0 else 0,
+            'engagement_heatmap': heatmap
         }
     
     def get_engagement_insights(self, student=None):

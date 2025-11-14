@@ -13,15 +13,33 @@ export default function Trends() {
     let mounted = true
     api
       .get('/trends/all')
-      .then((res) => mounted && setTrends(res.data))
-      .catch(() => {})
-      .finally(() => mounted && setLoading(false))
+      .then((res) => {
+        if (mounted) setTrends(res.data)
+      })
+      .catch((err) => {
+        console.error('Error fetching trends:', err)
+        if (mounted) setTrends(null)
+      })
+      .finally(() => {
+        if (mounted) setLoading(false)
+      })
     return () => {
       mounted = false
     }
   }, [])
 
-  if (loading) return <div>Loading...</div>
+  if (loading) return <div className="p-4">Loading...</div>
+  
+  if (!trends) {
+    return (
+      <div className="p-4">
+        <h2 className="text-lg font-semibold mb-4">Trends</h2>
+        <div className="p-4 bg-white dark:bg-gray-800 rounded shadow">
+          <p className="text-sm text-gray-500">No trends data available. Please ensure the backend is running and has student data.</p>
+        </div>
+      </div>
+    )
+  }
 
   // Map backend trends to labels/values for charts
   const completionByGrade = trends?.completion?.completion_by_grade || null
