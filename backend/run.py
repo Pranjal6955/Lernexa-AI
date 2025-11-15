@@ -7,7 +7,6 @@ import os
 import sys
 import argparse
 
-# Add current directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from scripts.clean_data import clean
@@ -36,7 +35,6 @@ def main():
     print("=" * 60)
     print()
     
-    # If no arguments, show interactive menu
     if not args.step and not args.all:
         print("Select an option:")
         print("1. Clean raw data")
@@ -107,8 +105,6 @@ def main():
         print("=" * 60)
         print("\nYou can now start the API server with:")
         print("  python app.py")
-        print()
-
-if __name__ == "__main__":
+        print()if __name__ == "__main__":
     main()
 

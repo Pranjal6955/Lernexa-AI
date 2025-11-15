@@ -24,16 +24,13 @@ class MLService:
         self.scaler = None
         self.model_info = {}
         
-        # Create models directory if it doesn't exist
         os.makedirs(self.model_dir, exist_ok=True)
         
-        # Try to load existing model
         self._load_model()
     
     def train_model(self):
         """Train the completion prediction model"""
         try:
-            # Get all student data
             all_students = self.data_service.get_all_students()
             if not all_students or len(all_students) < 10:
                 return {
@@ -41,17 +38,14 @@ class MLService:
                     'message': 'Need at least 10 student records'
                 }
             
-            # Convert to DataFrame
             df = pd.DataFrame(all_students)
             
-            # Feature selection
             feature_columns = [
                 'StudyHours', 'Attendance', 'AssignmentCompletion',
                 'Discussions', 'Resources', 'StressLevel',
                 'Internet', 'EduTech', 'OnlineCourses'
             ]
             
-            # Add computed features if available
             if 'EngagementScore' in df.columns:
                 feature_columns.append('EngagementScore')
             if 'RiskScore' in df.columns:
@@ -59,7 +53,6 @@ class MLService:
             if 'Consistency' in df.columns:
                 feature_columns.append('Consistency')
             
-            # Filter available features
             available_features = [f for f in feature_columns if f in df.columns]
             
             if not available_features:
@@ -67,20 +60,34 @@ class MLService:
             
             X = df[available_features].fillna(0)
             
-            # Create target variable: completion likelihood (1 if FinalGrade >= 60, else 0)
-            y = (df['FinalGrade'] >= 60).astype(int)
+            if 'FinalGrade' in df.columns:
+                final_grade_median = df['FinalGrade'].median()
+                y = (df['FinalGrade'] >= final_grade_median).astype(int)
+            elif 'RiskScore' in df.columns:
+                risk_median = df['RiskScore'].median()
+                y = (df['RiskScore'] <= risk_median).astype(int)
+            else:
+                return {'error': 'No target variable (FinalGrade or RiskScore) found for training'}
             
-            # Split data
-            X_train, X_test, y_train, y_test = train_test_split(
-                X, y, test_size=0.2, random_state=42, stratify=y
-            )
+            if y.nunique() < 2:
+                return {
+                    'error': 'Imbalanced target variable',
+                    'message': 'All students have same outcome. Need diverse student outcomes for training.'
+                }
             
-            # Scale features
+            try:
+                X_train, X_test, y_train, y_test = train_test_split(
+                    X, y, test_size=0.2, random_state=42, stratify=y
+                )
+            except:
+                X_train, X_test, y_train, y_test = train_test_split(
+                    X, y, test_size=0.2, random_state=42
+                )
+            
             self.scaler = StandardScaler()
             X_train_scaled = self.scaler.fit_transform(X_train)
             X_test_scaled = self.scaler.transform(X_test)
             
-            # Train model (using GradientBoosting for better performance)
             self.model = GradientBoostingClassifier(
                 n_estimators=100,
                 learning_rate=0.1,
@@ -90,20 +97,16 @@ class MLService:
             
             self.model.fit(X_train_scaled, y_train)
             
-            # Evaluate model
             y_pred = self.model.predict(X_test_scaled)
             accuracy = accuracy_score(y_test, y_pred)
             precision = precision_score(y_test, y_pred, zero_division=0)
             recall = recall_score(y_test, y_pred, zero_division=0)
             f1 = f1_score(y_test, y_pred, zero_division=0)
             
-            # Feature importance
             feature_importance = dict(zip(available_features, self.model.feature_importances_))
             
-            # Save model
             self._save_model()
             
-            # Update model info
             self.model_info = {
                 'trained': True,
                 'accuracy': round(accuracy, 4),
@@ -133,7 +136,6 @@ class MLService:
         """Predict completion likelihood for a student"""
         try:
             if not self.model:
-                # Try to load model or train if not available
                 if not self._load_model():
                     train_result = self.train_model()
                     if not train_result.get('success'):
@@ -142,28 +144,24 @@ class MLService:
                             'message': 'Please train the model first'
                         }
             
-            # Prepare features
             feature_columns = self.model_info.get('features_used', [
                 'StudyHours', 'Attendance', 'AssignmentCompletion',
                 'Discussions', 'Resources', 'StressLevel',
                 'Internet', 'EduTech', 'OnlineCourses', 'EngagementScore', 'RiskScore'
             ])
             
-            # Extract features from student data
             features = []
             for col in feature_columns:
                 features.append(student.get(col, 0))
             
             features_array = np.array(features).reshape(1, -1)
             
-            # Scale features
             features_scaled = self.scaler.transform(features_array)
             
-            # Predict
             prediction = self.model.predict(features_scaled)[0]
             probability = self.model.predict_proba(features_scaled)[0]
             
-            completion_likelihood = probability[1] * 100  # Probability of completion
+            completion_likelihood = probability[1] * 100
             
             return {
                 'student_id': student.get('StudentID'),

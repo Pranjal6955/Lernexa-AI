@@ -16,7 +16,6 @@ def generate_features():
     """Generate computed features from cleaned data"""
     print("📂 Loading cleaned data...")
     
-    # Check if cleaned data exists
     if not os.path.exists(CLEANED_PATH):
         print(f"Error: Cleaned data file not found at {CLEANED_PATH}")
         print("   Please run clean_data.py first!")
@@ -26,7 +25,6 @@ def generate_features():
         df = pd.read_csv(CLEANED_PATH)
         print(f"Loaded {len(df)} records")
         
-        # Compute reference maximum values (avoid division by zero)
         max_study_hours = max(df["StudyHours"].max(), 1)
         max_assignment = max(df["AssignmentCompletion"].max(), 1)
         max_discussions = max(df["Discussions"].max(), 1)
