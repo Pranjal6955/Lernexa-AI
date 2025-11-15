@@ -350,13 +350,6 @@ We welcome contributions! Please follow these steps:
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## 📞 Contact & Support
-
-- **Author**: Pranjal Negi
-- **GitHub**: [@Pranjal6955](https://github.com/Pranjal6955)
-- **Repository**: [Lernexa-AI](https://github.com/Pranjal6955/Lernexa-AI)
-
----
 
 **⭐ Star this repository if you found it helpful!**
 
