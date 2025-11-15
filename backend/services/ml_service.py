@@ -195,15 +195,15 @@ class MLService:
     def assess_dropout_risk(self, student):
         """Assess dropout risk for a student"""
         try:
-            # Get completion prediction
+
             completion_pred = self.predict_completion_likelihood(student)
             
-            # Additional risk factors
+
             risk_score = student.get('RiskScore', 0)
             attendance = student.get('Attendance', 0)
             engagement = student.get('EngagementScore', 0)
             
-            # Calculate overall risk
+
             risk_factors = []
             if attendance < 50:
                 risk_factors.append('Very low attendance')
@@ -214,7 +214,7 @@ class MLService:
             if completion_pred.get('completion_likelihood', 0) < 40:
                 risk_factors.append('Low completion likelihood')
             
-            # Determine risk level
+
             if len(risk_factors) >= 3 or risk_score >= 80:
                 risk_level = 'critical'
             elif len(risk_factors) >= 2 or risk_score >= 70:
