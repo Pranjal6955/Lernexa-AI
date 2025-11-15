@@ -91,60 +91,105 @@ export default function Dashboard() {
   const heat = overview?.engagement_heatmap || null
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="col-span-2 p-4 bg-white dark:bg-gray-800 rounded shadow">
-          <h2 className="text-lg font-semibold mb-4">Overview</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            {overview?.summary || (students.length === 0 ? 'No data available. Please ensure the backend is running and has student data.' : 'Loading summary...')}
+    <div className="space-y-8">
+      {/* Header */}
+      <div>
+          <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">Dashboard</h1>
+        <p className="text-gray-600 dark:text-gray-400">Welcome to your student analytics overview</p>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Students</h3>
+            <span className="text-2xl">👥</span>
+          </div>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">
+            {overview?.total_students ?? students.length ?? 0}
           </p>
+          <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">Active students</p>
         </div>
-        <div className="p-4 bg-white dark:bg-gray-800 rounded shadow">
-          <h3 className="font-medium mb-2">Stats</h3>
-          <ul className="text-sm space-y-1">
-            <li>Total students: {overview?.total_students ?? students.length ?? 0}</li>
-            <li>Avg score: {overview?.averages?.final_grade?.toFixed(2) ?? '—'}</li>
-            <li>Avg engagement: {overview?.averages?.engagement_score?.toFixed(2) ?? '—'}</li>
-          </ul>
+
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">Avg Score</h3>
+            <span className="text-2xl">📊</span>
+          </div>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">
+            {(overview?.averages?.final_grade ?? 0).toFixed(1)}
+          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">Final grade average</p>
+        </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">Engagement</h3>
+            <span className="text-2xl">⚡</span>
+          </div>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">
+            {(overview?.averages?.engagement_score ?? 0).toFixed(1)}
+          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">Student engagement</p>
+        </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">Overview</h3>
+            <span className="text-2xl">📈</span>
+          </div>
+          <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-3">
+            {overview?.summary || 'System ready'}
+          </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="md:col-span-2 space-y-4">
-          {students.length === 0 ? (
-            <div className="p-4 bg-white dark:bg-gray-800 rounded shadow">
-              <p className="text-sm text-gray-500">No student data available to display charts. Please ensure data is loaded in the database.</p>
-            </div>
-          ) : (
-            <Suspense fallback={<div>Loading charts...</div>}>
-              {numericCharts.length === 0 && categoricalCharts.length === 0 ? (
-                <div className="p-4 bg-white dark:bg-gray-800 rounded shadow">
-                  <p className="text-sm text-gray-500">No chartable data available. Student records may not have numeric or categorical fields.</p>
-                </div>
-              ) : (
-                <>
-                  {numericCharts.map((c) => (
-                    <ChartBar key={c.key} labels={c.data.labels} values={c.data.values} title={`${c.key} distribution`} />
-                  ))}
-
-                  {categoricalCharts.map((c) => (
-                    <ChartPie key={c.key} labels={c.data.labels} values={c.data.values} title={`${c.key} breakdown`} />
-                  ))}
-                </>
-              )}
-            </Suspense>
-          )}
-        </div>
-
+      {/* Charts Section */}
+      <div className="space-y-4">
         <div>
-          <Suspense fallback={<div>Loading heatmap...</div>}>
-            {heat ? (
-              <Heatmap matrix={heat} title="Engagement Heatmap" />
-            ) : (
-              <div className="p-4 bg-white dark:bg-gray-800 rounded shadow">No heatmap available</div>
-            )}
-          </Suspense>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Data Visualizations</h2>
+          <p className="text-gray-600 dark:text-gray-400">Explore student performance metrics</p>
         </div>
+
+        {students.length === 0 ? (
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-lg p-8 text-center border border-gray-100 dark:border-gray-700">
+            <p className="text-gray-500 dark:text-gray-400">No student data available. Please ensure the backend is running.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-4">
+              <Suspense fallback={<div className="text-center py-12">Loading charts...</div>}>
+                {numericCharts.length === 0 && categoricalCharts.length === 0 ? (
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-lg p-8 text-center border border-gray-100 dark:border-gray-700">
+                    <p className="text-gray-500 dark:text-gray-400">No chartable data available.</p>
+                  </div>
+                ) : (
+                  <>
+                    {numericCharts.map((c) => (
+                      <ChartBar key={c.key} labels={c.data.labels} values={c.data.values} title={`${c.key} distribution`} />
+                    ))}
+
+                    {categoricalCharts.map((c) => (
+                      <ChartPie key={c.key} labels={c.data.labels} values={c.data.values} title={`${c.key} breakdown`} />
+                    ))}
+                  </>
+                )}
+              </Suspense>
+            </div>
+
+            <div>
+              <Suspense fallback={<div className="text-center py-12">Loading heatmap...</div>}>
+                {heat ? (
+                  <Heatmap matrix={heat} title="Engagement Heatmap" />
+                ) : (
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-lg p-6 text-center border border-gray-100 dark:border-gray-700">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Heatmap unavailable</p>
+                  </div>
+                )}
+              </Suspense>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -65,23 +65,37 @@ export default function Trends() {
   })()
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-lg font-semibold">Trends</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Suspense fallback={<div>Loading chart...</div>}>
-          <ChartLine labels={completion.labels || []} values={completion.values || []} title="Completion Trends" />
-        </Suspense>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">Trends</h1>
+        <p className="text-gray-600 dark:text-gray-400">Analyze student performance trends and patterns</p>
+      </div>
 
-        <div className="space-y-4">
-          <Suspense fallback={<div>Loading chart...</div>}>
-            <ChartBar labels={scoresHistogram.labels || []} values={scoresHistogram.values || []} title="Average Quiz Score Distribution" />
-          </Suspense>
+      {loading ? (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-lg p-12 text-center border border-gray-100 dark:border-gray-700">
+          <p className="text-gray-500 dark:text-gray-400">Loading trends data...</p>
+        </div>
+      ) : !trends ? (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-lg p-12 text-center border border-gray-100 dark:border-gray-700">
+          <p className="text-gray-500 dark:text-gray-400">No trends data available. Please ensure the backend is running.</p>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Suspense fallback={<div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-lg p-12 text-center border border-gray-100 dark:border-gray-700">Loading chart...</div>}>
+              <ChartLine labels={completion.labels || []} values={completion.values || []} title="Completion Trends" />
+            </Suspense>
 
-          <Suspense fallback={<div>Loading chart...</div>}>
-            <ChartDonut labels={dropout.labels || []} values={dropout.values || []} title="Dropout Rate" />
+            <Suspense fallback={<div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-lg p-12 text-center border border-gray-100 dark:border-gray-700">Loading chart...</div>}>
+              <ChartBar labels={scoresHistogram.labels || []} values={scoresHistogram.values || []} title="Score Distribution" />
+            </Suspense>
+          </div>
+
+          <Suspense fallback={<div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-lg p-12 text-center border border-gray-100 dark:border-gray-700">Loading chart...</div>}>
+            <ChartDonut labels={dropout.labels || []} values={dropout.values || []} title="Dropout Risk Analysis" />
           </Suspense>
         </div>
-      </div>
+      )}
     </div>
   )
 }

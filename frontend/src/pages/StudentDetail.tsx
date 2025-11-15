@@ -49,29 +49,38 @@ export default function StudentDetail() {
   })()
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-semibold">Student: {student?.name || student?.Name || id}</h2>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">Student Profile</h1>
+        <p className="text-gray-600 dark:text-gray-400">Detailed information and analytics for {student?.name || student?.Name || 'the student'}</p>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="p-4 bg-white dark:bg-gray-800 rounded shadow">
-          <h3 className="font-medium mb-2">Details</h3>
-          <table className="text-sm w-full table-auto">
-            <tbody>
-              {Object.entries(student || {}).filter(([k]) => k !== 'email' && k !== 'Email').map(([k, v]) => (
-                <tr key={k}>
-                  <td className="py-1 font-medium align-top w-36 pr-4 text-xs">{k}</td>
-                  <td className="py-1 align-top">
-                    <div className="break-words whitespace-pre-wrap max-w-full text-sm">{typeof v === 'object' ? JSON.stringify(v, null, 2) : String(v ?? '—')}</div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Student Information</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <tbody>
+                  {Object.entries(student || {}).filter(([k]) => k !== 'email' && k !== 'Email').map(([k, v]) => (
+                    <tr key={k} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                      <td className="py-3 px-4 font-semibold text-gray-700 dark:text-gray-300 w-40">{k}</td>
+                      <td className="py-3 px-4 text-gray-900 dark:text-gray-100">
+                        <div className="break-words whitespace-pre-wrap max-w-full">
+                          {typeof v === 'object' ? JSON.stringify(v, null, 2) : String(v ?? '—')}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
         <div>
-          <Suspense fallback={<div>Loading chart...</div>}>
-            <ChartLine labels={metrics.labels || []} values={metrics.values || []} title="Performance Over Time" />
+          <Suspense fallback={<div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-lg p-12 text-center border border-gray-100 dark:border-gray-700">Loading chart...</div>}>
+            <ChartLine labels={metrics.labels || []} values={metrics.values || []} title="Performance Metrics" />
           </Suspense>
         </div>
       </div>
