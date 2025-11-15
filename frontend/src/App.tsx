@@ -1,7 +1,5 @@
 import { Suspense, lazy } from 'react'
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
-import { ThemeProvider } from './context/ThemeContext'
-import ThemeToggle from './components/ThemeToggle'
 import './index.css'
 
 const Dashboard = lazy(() => import('./pages/Dashboard'))
@@ -13,7 +11,6 @@ const ModelTraining = lazy(() => import('./pages/ModelTraining'))
 
 export default function App() {
   return (
-    <ThemeProvider>
       <BrowserRouter>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
           <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm dark:shadow-lg transition-colors duration-300">
@@ -34,7 +31,6 @@ export default function App() {
                   <Link to="/trends" className="text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Trends</Link>
                   <Link to="/training" className="text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Training</Link>
                 </div>
-                <ThemeToggle />
               </nav>
             </div>
           </header>
@@ -53,6 +49,5 @@ export default function App() {
         </main>
       </div>
     </BrowserRouter>
-    </ThemeProvider>
   )
 }
