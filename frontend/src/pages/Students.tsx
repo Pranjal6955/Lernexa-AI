@@ -13,22 +13,17 @@ export default function Students() {
     api
       .get('/students', { params: { page, limit: 200 } })
       .then((res) => {
-        // backend returns { students: [...], pagination: {...} }
         const data = res.data
         const list = Array.isArray(data) ? data : data?.students ?? []
         setStudents(list)
 
-        // derive table columns dynamically from the returned student objects
         const cols = new Set<string>()
         list.forEach((s: any) => Object.keys(s || {}).forEach((k) => cols.add(k)))
-        // remove email fields if present (dataset doesn't include them)
         cols.delete('email')
         cols.delete('Email')
-        // remove id and name columns per request
         cols.delete('id')
         cols.delete('Name')
         cols.delete('name')
-        // prefer common ordering: StudentID, FinalGrade/ExamScore, then the rest
         const preferred: string[] = []
         if (cols.has('StudentID')) preferred.push('StudentID')
         if (cols.has('FinalGrade')) preferred.push('FinalGrade')

@@ -20,14 +20,12 @@ def clean():
         
         print("\nCleaning dataset...")
         
-        # Remove duplicates
         initial_count = len(df)
         df = df.drop_duplicates()
         duplicates_removed = initial_count - len(df)
         if duplicates_removed > 0:
             print(f"   - Removed {duplicates_removed} duplicate records")
         
-        # Handle missing values in numeric columns
         numeric_cols = df.select_dtypes(include=['float64', 'int64']).columns
         for column in numeric_cols:
             missing_count = df[column].isna().sum()

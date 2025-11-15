@@ -18,15 +18,12 @@ class TrendsService:
         if not all_students:
             return {'error': 'No student data available'}
         
-        # Calculate completion metrics
         total_students = len(all_students)
         completed = sum(1 for s in all_students if s.get('FinalGrade', 0) >= 60)
         completion_rate = (completed / total_students * 100) if total_students > 0 else 0
         
-        # Assignment completion
         avg_assignment_completion = statistics.mean([s.get('AssignmentCompletion', 0) for s in all_students])
         
-        # Course completion by grade ranges
         excellent = sum(1 for s in all_students if s.get('FinalGrade', 0) >= 80)
         good = sum(1 for s in all_students if 60 <= s.get('FinalGrade', 0) < 80)
         needs_improvement = sum(1 for s in all_students if s.get('FinalGrade', 0) < 60)
@@ -81,13 +78,11 @@ class TrendsService:
         
         total_students = len(all_students)
         
-        # Define dropout criteria
         high_risk = sum(1 for s in all_students if s.get('RiskScore', 0) >= 70)
         very_low_attendance = sum(1 for s in all_students if s.get('Attendance', 0) < 50)
         very_low_engagement = sum(1 for s in all_students if s.get('EngagementScore', 0) < 30)
         failing = sum(1 for s in all_students if s.get('FinalGrade', 0) < 50)
         
-        # Students meeting multiple risk criteria
         at_risk = sum(1 for s in all_students if (
             s.get('RiskScore', 0) >= 70 or
             (s.get('Attendance', 0) < 50 and s.get('EngagementScore', 0) < 40)

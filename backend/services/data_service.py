@@ -9,13 +9,11 @@ class DataService:
     """Service for data operations"""
 
     def __init__(self):
-        # Ensure database is connected
         if db_config.db is None:
             connected = db_config.connect()
             if not connected:
                 raise Exception("Failed to connect to MongoDB")
         
-        # Assign the students collection
         self.collection = db_config.get_collection('students')
 
     def _convert_objectid(self, obj):
@@ -31,10 +29,8 @@ class DataService:
     def get_student_by_id(self, student_id):
         """Get a student by ID"""
         try:
-            # Try to find by StudentID first (string)
             student = self.collection.find_one({'StudentID': str(student_id)})
             if not student:
-                # Try ObjectId if it's a MongoDB _id
                 try:
                     student = self.collection.find_one({'_id': ObjectId(student_id)})
                 except:

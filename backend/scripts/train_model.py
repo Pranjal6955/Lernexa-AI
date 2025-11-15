@@ -24,15 +24,12 @@ def main():
     print("🤖 STUDENT DATA PREDICTION MODEL TRAINING")
     print("="*60 + "\n")
     
-    # Initialize ML service
     print("Initializing ML service...")
     ml_service = MLService()
     
-    # Train model
     print("Training model on student completion data...\n")
     result = ml_service.train_model()
     
-    # Print results
     if result.get('success'):
         print("✅ Model trained successfully!\n")
         metrics = result.get('metrics', {})

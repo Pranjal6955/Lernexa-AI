@@ -17,7 +17,6 @@ def get_student_insights(student_id):
         student = data_service.get_student_by_id(student_id)
         if not student:
             return jsonify({'error': 'Student not found'}), 404
-        
         insights = insights_service.generate_student_insights(student)
         return jsonify(insights), 200
     except Exception as e:

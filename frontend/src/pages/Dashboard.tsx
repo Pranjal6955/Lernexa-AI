@@ -31,7 +31,6 @@ export default function Dashboard() {
   useEffect(() => {
     let mounted = true
 
-    // fetch overview stats
     api.get('/insights/overview')
       .then((res) => { 
         if (mounted) setOverview(res.data)
@@ -41,7 +40,6 @@ export default function Dashboard() {
         if (mounted) setOverview(null)
       })
 
-    // fetch a large page of students for building charts (limit high so features are visible)
     api.get('/students', { params: { page: 1, limit: 2000 } })
       .then((res) => {
         const list = Array.isArray(res.data) ? res.data : res.data?.students ?? []
@@ -60,20 +58,16 @@ export default function Dashboard() {
 
   if (loading) return <div className="p-4">Loading...</div>
 
-  // Prepare feature distributions dynamically
   const allKeys = students.length > 0 
     ? Array.from(new Set(students.flatMap((s: any) => Object.keys(s || {}))))
     : []
 
-  // Filter out internal fields that shouldn't be charted
   const excludeKeys = ['_id', 'id', 'StudentID', '__v']
   const chartKeys = allKeys.filter((k) => !excludeKeys.includes(k))
 
-  // select numeric keys and categorical keys
   const numericKeys = chartKeys.filter((k) => students.some((s) => isNumeric(s[k])))
   const categoricalKeys = chartKeys.filter((k) => !numericKeys.includes(k) && students.some((s) => s[k] != null))
 
-  // build small set of charts: up to 4 numeric histograms and up to 3 categorical pies
   const numericCharts = numericKeys.slice(0, 4).map((k) => {
     const vals = students.map((s) => Number(s[k])).filter((n) => !isNaN(n))
     return { key: k, data: histogram(vals, 6) }
@@ -92,13 +86,11 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div>
           <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">Dashboard</h1>
         <p className="text-gray-600 dark:text-gray-400">Welcome to your student analytics overview</p>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-lg p-6 border border-gray-100 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
@@ -144,7 +136,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Charts Section */}
       <div className="space-y-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Data Visualizations</h2>
